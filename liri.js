@@ -58,7 +58,7 @@ var colorCode = {
 function lookupTrack(trackName, resultNum) {
     var rickRoll = false;
 
-    if(!trackName) { 
+    if (!trackName) {
         trackName = "Never Gonna Give You Up";
         rickRoll = true;
     }
@@ -89,18 +89,20 @@ function lookupTrack(trackName, resultNum) {
             console.log(colorCode.fgBrightBlue + 'Album: ' + colorCode.fgBrightWhite + albumName);
             console.log(colorCode.fgBrightBlue + 'Preview: ' + colorCode.fgCyan + previewUrl);
 
-            if(rickRoll) {
-                var rick = "/Never gonna give you up/Never gonna let you down/Never gonna run around and desert you/Never gonna make you cry/Never gonna say goodbye/Never gonna tell a lie and hurt you".replace(/\//g, "\n");
-                var rainbow = [colorCode.fgBrightRed, colorCode.fgBrightYellow, colorCode.fgBrightGreen, colorCode.fgBrightCyan, colorCode.fgBrightBlue, colorCode.fgBrightMagenta];
-                var rickRainbow = [];
-                var rainbowIndex = 0;
-                for(var i = 0; i < rick.length; i++) {
-                    rickRainbow.push(rick.charAt(i));
-                    rickRainbow.push(rainbow[rainbowIndex]);
-                    rainbowIndex = (rainbowIndex + 1) % rainbow.length;
-                }
+            if (rickRoll) {
+                setTimeout(function () {
+                    var rick = "/Never gonna give you up/Never gonna let you down/Never gonna run around and desert you/Never gonna make you cry/Never gonna say goodbye/Never gonna tell a lie and hurt you".replace(/\//g, "\n");
+                    var rainbow = [colorCode.fgBrightRed, colorCode.fgBrightYellow, colorCode.fgBrightGreen, colorCode.fgBrightCyan, colorCode.fgBrightBlue, colorCode.fgBrightMagenta];
+                    var rickRainbow = [];
+                    var rainbowIndex = 0;
+                    for (var i = 0; i < rick.length; i++) {
+                        rickRainbow.push(rick.charAt(i));
+                        rickRainbow.push(rainbow[rainbowIndex]);
+                        rainbowIndex = (rainbowIndex + 1) % rainbow.length;
+                    }
 
-                console.log(rickRainbow.join(""));
+                    console.log(rickRainbow.join(""));
+                }, 5000);
             }
         } catch (e) {
             if (e instanceof TypeError) {
