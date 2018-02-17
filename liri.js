@@ -3,12 +3,9 @@ var Spotify = require('node-spotify-api');
 var request = require('request');
 var Twitter = require('twitter');
 var keys = require("./keys.js");
+var querystring = require('querystring');
 
-// spotify.search({type: "Tool", id: keys.spotify.id, secret: keys.spotify.secret}, function(err, data) {
-//     console.log(err);
-//     console.log(data);
-// });
-
+var omdbUrl = "http://www.omdbapi.com/";
 
 
 var commands = {
@@ -17,6 +14,9 @@ var commands = {
     },
     "my-tweets": function () {
         getTweets();
+    },
+    "movie-this": function (p1) {
+        lookupFilm(p1);
     },
 }
 
@@ -152,17 +152,64 @@ function getTweets() {
             logTweet(tweets[i]);
         }
     });
+
+    function logTweet(tweet) {
+        console.log(colorCode.bgBlack);
+        console.log(colorCode.bgWhite + colorCode.fgBlack +
+            ("►" + tweet.user.name + colorCode.fgBlue + "  @" + tweet.user.screen_name)
+                .padEnd(40 + colorCode.fgCyan.length));
+        var tweetText = tweet.text;
+        while (tweetText.length > 0) {
+            var substr = tweetText.substr(0, 30);
+            tweetText = tweetText.substr(30);
+            console.log(colorCode.bgWhite + colorCode.fgBlack + ("     " + substr).padEnd(40));
+        }
+    }
 }
 
-function logTweet(tweet) {
-    console.log(colorCode.bgBlack);
-    console.log(colorCode.bgWhite + colorCode.fgBlack + 
-        ("►" + tweet.user.name + colorCode.fgBlue + "  @" + tweet.user.screen_name)
-        .padEnd(40 + colorCode.fgCyan.length));
-    var tweetText = tweet.text;
-    while (tweetText.length > 0) {
-        var substr = tweetText.substr(0, 30);
-        tweetText = tweetText.substr(30);
-        console.log(colorCode.bgWhite + colorCode.fgBlack + ("     " + substr).padEnd(40));
+
+
+function lookupFilm(filmName) {
+    omdbParams = {
+        t: filmName,
+        apikey: keys.omdb.api_key,
+    };
+    var url = omdbUrl + "?" + querystring.stringify(omdbParams);
+    request(url, function (err, response, body) {
+        if (err) {
+            console.log("Error:", err);
+        } else if (response.statusCode == 200) {
+            var result = JSON.parse(body);
+
+            var imdbRating = getRating(result, "Internet Movie Database");
+            var tomatoRating = getRating(result, "Rotten Tomatoes");
+
+            console.log( colorCode.bgWhite + colorCode.fgBlack +
+                result.Title + " (" + result.Year + ")" +
+                colorCode.reset
+            );
+            logFilmDetail("IMDB Rating", imdbRating);
+            logFilmDetail("Rotten Tomatoes Rating", tomatoRating);
+            logFilmDetail("Country", result.Country);
+            logFilmDetail("Langauge", result.Language);
+            logFilmDetail("Actors", result.Actors);
+            logFilmDetail("Plot", result.Plot);
+        } else {
+            console.log("OMDB responded with HTTP code " + response.statusCode);
+        }
+    });
+
+    function getRating(omdbData, name) {
+        if(!name) return;
+        var ratings = omdbData.Ratings || [];
+        for(var i = 0; i < ratings.length; i++) {
+            if(ratings[i].Source == name) return ratings[i].Value || null; 
+        }
+
+        return null;
+    }
+
+    function logFilmDetail(name, value) {
+        console.log(colorCode.fgBlue + name + ": " + colorCode.fgBrightWhite + value)
     }
 }
