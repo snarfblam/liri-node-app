@@ -175,6 +175,8 @@ function getTweets() {
 
 
 function lookupFilm(filmName) {
+    filmName = filmName || "Phil the alien";
+
     omdbParams = {
         t: filmName,
         apikey: keys.omdb.api_key,
@@ -205,7 +207,7 @@ function lookupFilm(filmName) {
     });
 
     function getRating(omdbData, name) {
-        if(!name) return;
+        if(!omdbData) return;
         var ratings = omdbData.Ratings || [];
         for(var i = 0; i < ratings.length; i++) {
             if(ratings[i].Source == name) return ratings[i].Value || null; 
