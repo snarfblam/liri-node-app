@@ -5,10 +5,14 @@ var Twitter = require('twitter');
 var keys = require("./keys.js");
 var querystring = require('querystring');
 var dateFormat = require('dateformat');
+var fs = require('fs');
+
 
 { // Datums
 
     var omdbUrl = "http://www.omdbapi.com/";
+    var randomPath = 'random.txt';
+    var randomEncoding = 'utf8';
 
     var commands = {
         "spotify-this-song": function (p1, p2) {
@@ -19,6 +23,25 @@ var dateFormat = require('dateformat');
         },
         "movie-this": function (p1) {
             lookupFilm(p1);
+        },
+        "do-what-it-says": function () {
+            try {
+                var contents = fs.readFileSync(randomPath, randomEncoding);
+            } catch (err) {
+                console.log("Failed to load contents of random.txt: ", err);
+                return;
+            }
+
+            // Get each line, trimmed (theory being trimming will get rid of any tabs or windows' \r\n line separators)
+            var lines = contents.split('\n').map(function (s) { return s.trim(); });
+            lines.forEach(function (line) {
+                console.log("Executing command>", line)
+                var lineparts = line.split(',').map(function (l) { return l.trim(); });
+
+                executeCommand(lineparts[0], lineparts[1], lineparts[2]);
+            });
+
+
         },
     }
 
@@ -68,21 +91,26 @@ var dateFormat = require('dateformat');
     console.log();
 }
 
-{ // Command parsing
+// { // Command parsing
 
     var command = process.argv[2];
     var param1 = process.argv[3];
     var param2 = process.argv[4];
 
-    if (command) command = command.toLowerCase();
-    var commandFunc = commands[command];
+    executeCommand(command, param1, param2);
 
-    if (commandFunc) {
-        commandFunc(param1, param2);
-    } else {
-        console.log("Error: unknown command -- " + command);
+
+    function executeCommand(cmd, pram1, pram2) {
+        if (cmd) cmd = cmd.toLowerCase();
+        var commandFunc = commands[cmd];
+
+        if (commandFunc) {
+            commandFunc(pram1, pram2);
+        } else {
+            console.log("Error: unknown command -- " + cmd);
+        }
     }
-}
+// }
 
 // Functions
 function lookupTrack(trackName, resultNum) {
