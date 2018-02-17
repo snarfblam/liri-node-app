@@ -19,6 +19,7 @@
   "homepage": "https://github.com/snarfblam/liri-node-app#readme",
   "dependencies": {
     "@types/node": "^9.4.6",
+    "dateformat": "^3.0.3",
     "dotenv": "^5.0.0",
     "node-spotify-api": "^1.0.7",
     "twitter": "^1.7.1"

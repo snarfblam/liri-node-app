@@ -4,6 +4,7 @@ var request = require('request');
 var Twitter = require('twitter');
 var keys = require("./keys.js");
 var querystring = require('querystring');
+var dateFormat = require('dateformat');
 
 var omdbUrl = "http://www.omdbapi.com/";
 
@@ -94,14 +95,14 @@ function lookupTrack(trackName, resultNum) {
             var trackName = trackInfo.name;
             var previewUrl = trackInfo.preview_url;
 
-            console.log("");
-            console.log(colorCode.fgBrightBlue + "Track information:")
             console.log(
-                colorCode.fgBrightWhite + '"' + trackName + '"' +
+                colorCode.bgWhite + colorCode.fgBlack + trackName +
                 colorCode.fgBrightBlue + ' by ' +
-                colorCode.fgBrightWhite + artist);
+                colorCode.fgBlack + artist +
+                colorCode.reset
+            );
             console.log(colorCode.fgBrightBlue + 'Album: ' + colorCode.fgBrightWhite + albumName);
-            console.log(colorCode.fgBrightBlue + 'Preview: ' + colorCode.fgCyan + previewUrl);
+            console.log(colorCode.fgBrightBlue + 'Preview: ' + colorCode.fgBrightWhite + previewUrl);
 
             if (rickRoll) {
                 setTimeout(function () {
@@ -154,15 +155,19 @@ function getTweets() {
     });
 
     function logTweet(tweet) {
-        console.log(colorCode.bgBlack);
-        console.log(colorCode.bgWhite + colorCode.fgBlack +
-            ("►" + tweet.user.name + colorCode.fgBlue + "  @" + tweet.user.screen_name)
-                .padEnd(40 + colorCode.fgCyan.length));
+        var createdAt = dateFormat(tweet.created_at, "dddd, mmmm dS, yyyy, h:MM:ss TT");
+
+        console.log("");
+        console.log(
+            colorCode.bgWhite + colorCode.fgBlack + " ►" + tweet.user.name + 
+            colorCode.fgBlue + "  (@" + tweet.user.screen_name + ") " + 
+            colorCode.fgBlack + createdAt + " " + colorCode.reset);
+                
         var tweetText = tweet.text;
         while (tweetText.length > 0) {
             var substr = tweetText.substr(0, 30);
             tweetText = tweetText.substr(30);
-            console.log(colorCode.bgWhite + colorCode.fgBlack + ("     " + substr).padEnd(40));
+            console.log(("     " + substr).padEnd(40));
         }
     }
 }
@@ -210,6 +215,6 @@ function lookupFilm(filmName) {
     }
 
     function logFilmDetail(name, value) {
-        console.log(colorCode.fgBlue + name + ": " + colorCode.fgBrightWhite + value)
+        console.log(colorCode.fgBrightBlue + name + ": " + colorCode.fgBrightWhite + value)
     }
 }
