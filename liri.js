@@ -186,7 +186,7 @@ function getTweets() {
         while (tweetText.length > 0) {
             var substr = tweetText.substr(0, 30);
             tweetText = tweetText.substr(30);
-            console.log(("     " + substr).padEnd(40));
+            console.log(("     " + substr));
         }
         console.log("");
     }
