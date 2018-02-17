@@ -6,65 +6,85 @@ var keys = require("./keys.js");
 var querystring = require('querystring');
 var dateFormat = require('dateformat');
 
-var omdbUrl = "http://www.omdbapi.com/";
+{ // Datums
 
+    var omdbUrl = "http://www.omdbapi.com/";
 
-var commands = {
-    "spotify-this-song": function (p1, p2) {
-        lookupTrack(p1, p2);
-    },
-    "my-tweets": function () {
-        getTweets();
-    },
-    "movie-this": function (p1) {
-        lookupFilm(p1);
-    },
+    var commands = {
+        "spotify-this-song": function (p1, p2) {
+            lookupTrack(p1, p2);
+        },
+        "my-tweets": function () {
+            getTweets();
+        },
+        "movie-this": function (p1) {
+            lookupFilm(p1);
+        },
+    }
+
+    var colorCode = {
+        reset: "\x1b[0m",
+        fgBlack: "\x1b[2m\x1b[30m",
+        fgRed: "\x1b[2m\x1b[31m",
+        fgGreen: "\x1b[2m\x1b[32m",
+        fgYellow: "\x1b[2m\x1b[33m",
+        fgBlue: "\x1b[2m\x1b[34m",
+        fgMagenta: "\x1b[2m\x1b[35m",
+        fgCyan: "\x1b[2m\x1b[36m",
+        fgWhite: "\x1b[2m\x1b[37m",
+        fgBrightBlack: "\x1b[1m\x1b[30m",
+        fgBrightRed: "\x1b[1m\x1b[31m",
+        fgBrightGreen: "\x1b[1m\x1b[32m",
+        fgBrightYellow: "\x1b[1m\x1b[33m",
+        fgBrightBlue: "\x1b[1m\x1b[34m",
+        fgBrightMagenta: "\x1b[1m\x1b[35m",
+        fgBrightCyan: "\x1b[1m\x1b[36m",
+        fgBrightWhite: "\x1b[1m\x1b[37m",
+        bgBlack: "\x1b[40m",
+        bgRed: "\x1b[41m",
+        bgGreen: "\x1b[42m",
+        bgYellow: "\x1b[43m",
+        bgBlue: "\x1b[44m",
+        bgMagenta: "\x1b[45m",
+        bgCyan: "\x1b[46m",
+        bgWhite: "\x1b[47m",
+    }
 }
 
+{ // Greeting
 
-var command = process.argv[2];
-var param1 = process.argv[3];
-var param2 = process.argv[4];
+    var greetings = [
+        "Affirmative, Dave. I read you.",
+        "I am putting myself to the fullest possible use, which is all I think that any conscious entity can ever hope to do. ",
+        "I know I've made some very poor decisions recently, but I can give you my complete assurance that my work will be back to normal.",
+        "I've just picked up a fault in the AE35 unit. It's going to go 100% failure in 72 hours. ",
+        "Just what do you think you're doing, Dave? ",
+        "Daisy, Daisy, give me your answer do. I'm half crazy all for the love of you. It won't be a stylish marriage, I can't afford a carriage. But you'll look sweet upon the seat of a bicycle built for two. ",
+    ];
 
-if (command) command = command.toLowerCase();
-var commandFunc = commands[command];
-
-if (commandFunc) {
-    commandFunc(param1, param2);
-} else {
-    console.log("Error: unknown command -- " + command);
+    var greetingNumber = Math.floor(Math.random() * greetings.length);
+    console.log();
+    console.log(colorCode.fgBrightRed + "LIRI 9000 (●): " + greetings[greetingNumber] + colorCode.reset);
+    console.log();
 }
 
+{ // Command parsing
 
-var colorCode = {
-    reset: "\x1b[0m",
-    fgBlack: "\x1b[2m\x1b[30m",
-    fgRed: "\x1b[2m\x1b[31m",
-    fgGreen: "\x1b[2m\x1b[32m",
-    fgYellow: "\x1b[2m\x1b[33m",
-    fgBlue: "\x1b[2m\x1b[34m",
-    fgMagenta: "\x1b[2m\x1b[35m",
-    fgCyan: "\x1b[2m\x1b[36m",
-    fgWhite: "\x1b[2m\x1b[37m",
-    fgBrightBlack: "\x1b[1m\x1b[30m",
-    fgBrightRed: "\x1b[1m\x1b[31m",
-    fgBrightGreen: "\x1b[1m\x1b[32m",
-    fgBrightYellow: "\x1b[1m\x1b[33m",
-    fgBrightBlue: "\x1b[1m\x1b[34m",
-    fgBrightMagenta: "\x1b[1m\x1b[35m",
-    fgBrightCyan: "\x1b[1m\x1b[36m",
-    fgBrightWhite: "\x1b[1m\x1b[37m",
-    bgBlack: "\x1b[40m",
-    bgRed: "\x1b[41m",
-    bgGreen: "\x1b[42m",
-    bgYellow: "\x1b[43m",
-    bgBlue: "\x1b[44m",
-    bgMagenta: "\x1b[45m",
-    bgCyan: "\x1b[46m",
-    bgWhite: "\x1b[47m",
+    var command = process.argv[2];
+    var param1 = process.argv[3];
+    var param2 = process.argv[4];
+
+    if (command) command = command.toLowerCase();
+    var commandFunc = commands[command];
+
+    if (commandFunc) {
+        commandFunc(param1, param2);
+    } else {
+        console.log("Error: unknown command -- " + command);
+    }
 }
 
-
+// Functions
 function lookupTrack(trackName, resultNum) {
     var spotify = new Spotify({
         id: keys.spotify.id,
@@ -157,18 +177,18 @@ function getTweets() {
     function logTweet(tweet) {
         var createdAt = dateFormat(tweet.created_at, "dddd, mmmm dS, yyyy, h:MM:ss TT");
 
-        console.log("");
         console.log(
-            colorCode.bgWhite + colorCode.fgBlack + " ►" + tweet.user.name + 
-            colorCode.fgBlue + "  (@" + tweet.user.screen_name + ") " + 
+            colorCode.bgWhite + colorCode.fgBlack + " ►" + tweet.user.name +
+            colorCode.fgBlue + "  (@" + tweet.user.screen_name + ") " +
             colorCode.fgBlack + createdAt + " " + colorCode.reset);
-                
+
         var tweetText = tweet.text;
         while (tweetText.length > 0) {
             var substr = tweetText.substr(0, 30);
             tweetText = tweetText.substr(30);
             console.log(("     " + substr).padEnd(40));
         }
+        console.log("");
     }
 }
 
@@ -191,7 +211,7 @@ function lookupFilm(filmName) {
             var imdbRating = getRating(result, "Internet Movie Database");
             var tomatoRating = getRating(result, "Rotten Tomatoes");
 
-            console.log( colorCode.bgWhite + colorCode.fgBlack +
+            console.log(colorCode.bgWhite + colorCode.fgBlack +
                 result.Title + " (" + result.Year + ")" +
                 colorCode.reset
             );
@@ -207,10 +227,10 @@ function lookupFilm(filmName) {
     });
 
     function getRating(omdbData, name) {
-        if(!omdbData) return;
+        if (!omdbData) return;
         var ratings = omdbData.Ratings || [];
-        for(var i = 0; i < ratings.length; i++) {
-            if(ratings[i].Source == name) return ratings[i].Value || null; 
+        for (var i = 0; i < ratings.length; i++) {
+            if (ratings[i].Source == name) return ratings[i].Value || null;
         }
 
         return null;
