@@ -1,22 +1,23 @@
 require("dotenv").config();
 var Spotify = require('node-spotify-api');
 var request = require('request');
-var twitter = require('twitter');
+var Twitter = require('twitter');
 var keys = require("./keys.js");
 
 // spotify.search({type: "Tool", id: keys.spotify.id, secret: keys.spotify.secret}, function(err, data) {
 //     console.log(err);
 //     console.log(data);
 // });
-var spotify = new Spotify({
-    id: keys.spotify.id,
-    secret: keys.spotify.secret,
-});
+
+
 
 var commands = {
     "spotify-this-song": function (p1, p2) {
         lookupTrack(p1, p2);
-    }
+    },
+    "my-tweets": function () {
+        getTweets();
+    },
 }
 
 
@@ -43,7 +44,7 @@ var colorCode = {
     fgBlue: "\x1b[2m\x1b[34m",
     fgMagenta: "\x1b[2m\x1b[35m",
     fgCyan: "\x1b[2m\x1b[36m",
-    fgBrightWhite: "\x1b[1m\x1b[37m",
+    fgWhite: "\x1b[2m\x1b[37m",
     fgBrightBlack: "\x1b[1m\x1b[30m",
     fgBrightRed: "\x1b[1m\x1b[31m",
     fgBrightGreen: "\x1b[1m\x1b[32m",
@@ -52,10 +53,23 @@ var colorCode = {
     fgBrightMagenta: "\x1b[1m\x1b[35m",
     fgBrightCyan: "\x1b[1m\x1b[36m",
     fgBrightWhite: "\x1b[1m\x1b[37m",
+    bgBlack: "\x1b[40m",
+    bgRed: "\x1b[41m",
+    bgGreen: "\x1b[42m",
+    bgYellow: "\x1b[43m",
+    bgBlue: "\x1b[44m",
+    bgMagenta: "\x1b[45m",
+    bgCyan: "\x1b[46m",
+    bgWhite: "\x1b[47m",
 }
 
 
 function lookupTrack(trackName, resultNum) {
+    var spotify = new Spotify({
+        id: keys.spotify.id,
+        secret: keys.spotify.secret,
+    });
+
     var rickRoll = false;
 
     if (!trackName) {
@@ -91,7 +105,7 @@ function lookupTrack(trackName, resultNum) {
 
             if (rickRoll) {
                 setTimeout(function () {
-                    var rick = "/Never gonna give you up/Never gonna let you down/Never gonna run around and desert you/Never gonna make you cry/Never gonna say goodbye/Never gonna tell a lie and hurt you".replace(/\//g, "\n");
+                    var rick = "/Never gonna give you up /Never gonna let you down/Never gonna run around and desert you     /Never gonna make you cry/Never gonna say goodbye /Never gonna tell a lie and hurt you".replace(/\//g, "\n");
                     var rainbow = [colorCode.fgBrightRed, colorCode.fgBrightYellow, colorCode.fgBrightGreen, colorCode.fgBrightCyan, colorCode.fgBrightBlue, colorCode.fgBrightMagenta];
                     var rickRainbow = [];
                     var rainbowIndex = 0;
@@ -102,7 +116,7 @@ function lookupTrack(trackName, resultNum) {
                     }
 
                     console.log(rickRainbow.join(""));
-                }, 5000);
+                }, 2000);
             }
         } catch (e) {
             if (e instanceof TypeError) {
@@ -116,3 +130,39 @@ function lookupTrack(trackName, resultNum) {
     });
 }
 
+function getTweets() {
+    var twitter = new Twitter({
+        consumer_key: keys.twitter.consumer_key,
+        consumer_secret: keys.twitter.consumer_secret,
+        access_token_key: keys.twitter.access_token_key,
+        access_token_secret: keys.twitter.access_token_secret,
+    });
+
+    var twitPrams = { screen_name: keys.twitter.username };
+    twitter.get('statuses/user_timeline', twitPrams, function (error, tweets, response) {
+        tweets = tweets || "";
+        if (error) {
+            console.log("Error retrieving twits:");
+            console.log(error);
+            return;
+        }
+
+        var tweetCount = Math.min(tweets.length || 20);
+        for (var i = 0; i < tweetCount; i++) {
+            logTweet(tweets[i]);
+        }
+    });
+}
+
+function logTweet(tweet) {
+    console.log(colorCode.bgBlack);
+    console.log(colorCode.bgWhite + colorCode.fgBlack + 
+        ("►" + tweet.user.name + colorCode.fgBlue + "  @" + tweet.user.screen_name)
+        .padEnd(40 + colorCode.fgCyan.length));
+    var tweetText = tweet.text;
+    while (tweetText.length > 0) {
+        var substr = tweetText.substr(0, 30);
+        tweetText = tweetText.substr(30);
+        console.log(colorCode.bgWhite + colorCode.fgBlack + ("     " + substr).padEnd(40));
+    }
+}
