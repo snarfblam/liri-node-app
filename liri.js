@@ -6,6 +6,7 @@ var keys = require("./keys.js");
 var querystring = require('querystring');
 var dateFormat = require('dateformat');
 var fs = require('fs');
+var inquirer = require('inquirer');
 
 
 { // Datums
@@ -72,6 +73,14 @@ var fs = require('fs');
         bgCyan: "\x1b[46m",
         bgWhite: "\x1b[47m",
     }
+
+    var inquirerPrefix =
+        colorCode.fgBrightWhite + "▐" +
+        colorCode.bgBlack + colorCode.fgWhite + "(" +
+        colorCode.fgBrightRed + "●" +
+        colorCode.fgWhite + ")" +
+        colorCode.reset + colorCode.fgBrightWhite + "▌" +
+        colorCode.fgRed;
 }
 
 { // Greeting
@@ -87,29 +96,47 @@ var fs = require('fs');
 
     var greetingNumber = Math.floor(Math.random() * greetings.length);
     console.log();
-    console.log(colorCode.fgBrightRed + "LIRI 9000 (●): " + greetings[greetingNumber] + colorCode.reset);
+    console.log(colorCode.fgRed + "LIRI 9000 " + inquirerPrefix + ": " + greetings[greetingNumber] + colorCode.reset);
     console.log();
 }
 
 // { // Command parsing
+var command = process.argv[2];
+var param1 = process.argv[3];
+var param2 = process.argv[4];
 
-    var command = process.argv[2];
-    var param1 = process.argv[3];
-    var param2 = process.argv[4];
 
+if (command) {
     executeCommand(command, param1, param2);
+} else {
+    inquirer.prompt([{
+        type: 'list',
+        choices: ['my-tweets', 'spotify-this-song', 'movie-this'],
+        message: 'Please select an option, Dave.',
+        name: 'cmd',
+        prefix: inquirerPrefix,
+    }]).then(function (result) {
+        console.log(" "); // leave blank line
 
-
-    function executeCommand(cmd, pram1, pram2) {
-        if (cmd) cmd = cmd.toLowerCase();
-        var commandFunc = commands[cmd];
-
-        if (commandFunc) {
-            commandFunc(pram1, pram2);
-        } else {
-            console.log("Error: unknown command -- " + cmd);
+        if (result.cmd) {
+            executeCommand(result.cmd);
         }
+    }).catch(function (err) {
+        console.log("Error:", err);
+    });
+}
+
+
+function executeCommand(cmd, pram1, pram2) {
+    if (cmd) cmd = cmd.toLowerCase();
+    var commandFunc = commands[cmd];
+
+    if (commandFunc) {
+        commandFunc(pram1, pram2);
+    } else {
+        console.log("Error: unknown command -- " + cmd);
     }
+}
 // }
 
 // Functions
@@ -121,62 +148,83 @@ function lookupTrack(trackName, resultNum) {
 
     var rickRoll = false;
 
-    if (!trackName) {
-        trackName = "Never Gonna Give You Up";
-        rickRoll = true;
+    if (trackName) {
+        doTheLookup();
+    } else {
+
+        var defaultTrack = 'or might I choose?';
+
+        inquirer.prompt([{
+            type: "input",
+            message: "Which song would you like to hear about, Dave?",
+            default: defaultTrack,
+            name: "track",
+            prefix: inquirerPrefix,
+        }]).then(function (result) {
+            if (result.track == defaultTrack) {
+                trackName = "Never Gonna Give You Up";
+                rickRoll = true;
+            } else {
+                trackName = result.track;
+            }
+
+            doTheLookup();
+        });
     }
 
-    spotify.search({ type: 'track', query: trackName }, function (err, data) {
-        if (err) {
-            console.log('Error occurred: ' + err);
-            return;
-        }
-
-        var trackNum = resultNum;
-        if (!trackNum) trackNum = 1;
-        trackNum = parseInt(trackNum) - 1; // convert from 1-based to 0-based
-
-        try {
-            var trackInfo = data.tracks.items[trackNum];
-            var artist = trackInfo.artists[0].name;
-            var albumName = trackInfo.album.name;
-            var trackName = trackInfo.name;
-            var previewUrl = trackInfo.preview_url;
-
-            console.log(
-                colorCode.bgWhite + colorCode.fgBlack + trackName +
-                colorCode.fgBrightBlue + ' by ' +
-                colorCode.fgBlack + artist +
-                colorCode.reset
-            );
-            console.log(colorCode.fgBrightBlue + 'Album: ' + colorCode.fgBrightWhite + albumName);
-            console.log(colorCode.fgBrightBlue + 'Preview: ' + colorCode.fgBrightWhite + previewUrl);
-
-            if (rickRoll) {
-                setTimeout(function () {
-                    var rick = "/Never gonna give you up /Never gonna let you down/Never gonna run around and desert you     /Never gonna make you cry/Never gonna say goodbye /Never gonna tell a lie and hurt you".replace(/\//g, "\n");
-                    var rainbow = [colorCode.fgBrightRed, colorCode.fgBrightYellow, colorCode.fgBrightGreen, colorCode.fgBrightCyan, colorCode.fgBrightBlue, colorCode.fgBrightMagenta];
-                    var rickRainbow = [];
-                    var rainbowIndex = 0;
-                    for (var i = 0; i < rick.length; i++) {
-                        rickRainbow.push(rick.charAt(i));
-                        rickRainbow.push(rainbow[rainbowIndex]);
-                        rainbowIndex = (rainbowIndex + 1) % rainbow.length;
-                    }
-
-                    console.log(rickRainbow.join(""));
-                }, 2000);
+    function doTheLookup() {
+        spotify.search({ type: 'track', query: trackName }, function (err, data) {
+            if (err) {
+                console.log('Error occurred: ' + err);
+                return;
             }
-        } catch (e) {
-            if (e instanceof TypeError) {
-                console.log("Error: could not find the requested track information.")
-            } else {
-                throw e;
+
+            var trackNum = resultNum;
+            if (!trackNum) trackNum = 1;
+            trackNum = parseInt(trackNum) - 1; // convert from 1-based to 0-based
+
+            try {
+                var trackInfo = data.tracks.items[trackNum];
+                var artist = trackInfo.artists[0].name;
+                var albumName = trackInfo.album.name;
+                var trackName = trackInfo.name;
+                var previewUrl = trackInfo.preview_url;
+
+                console.log(
+                    colorCode.bgWhite + colorCode.fgBlack + trackName +
+                    colorCode.fgBrightBlue + ' by ' +
+                    colorCode.fgBlack + artist +
+                    colorCode.reset
+                );
+                console.log(colorCode.fgBrightBlue + 'Album: ' + colorCode.fgBrightWhite + albumName);
+                console.log(colorCode.fgBrightBlue + 'Preview: ' + colorCode.fgBrightWhite + previewUrl);
+
+                if (rickRoll) {
+                    setTimeout(function () {
+                        var rick = "/Never gonna give you up /Never gonna let you down/Never gonna run around and desert you     /Never gonna make you cry/Never gonna say goodbye /Never gonna tell a lie and hurt you".replace(/\//g, "\n");
+                        var rainbow = [colorCode.fgBrightRed, colorCode.fgBrightYellow, colorCode.fgBrightGreen, colorCode.fgBrightCyan, colorCode.fgBrightBlue, colorCode.fgBrightMagenta];
+                        var rickRainbow = [];
+                        var rainbowIndex = 0;
+                        for (var i = 0; i < rick.length; i++) {
+                            rickRainbow.push(rick.charAt(i));
+                            rickRainbow.push(rainbow[rainbowIndex]);
+                            rainbowIndex = (rainbowIndex + 1) % rainbow.length;
+                        }
+
+                        console.log(rickRainbow.join(""));
+                    }, 2000);
+                }
+            } catch (e) {
+                if (e instanceof TypeError) {
+                    console.log("Error: could not find the requested track information.")
+                } else {
+                    throw e;
+                }
             }
-        }
 
 
-    });
+        });
+    }
 }
 
 function getTweets() {
