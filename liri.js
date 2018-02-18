@@ -16,15 +16,9 @@ var inquirer = require('inquirer');
     var randomEncoding = 'utf8';
 
     var commands = {
-        "spotify-this-song": function (p1, p2) {
-            lookupTrack(p1, p2);
-        },
-        "my-tweets": function () {
-            getTweets();
-        },
-        "movie-this": function (p1) {
-            lookupFilm(p1);
-        },
+        "spotify-this-song": lookupTrack,
+        "my-tweets": getTweets,
+        "movie-this": lookupFilm,
         "do-what-it-says": function () {
             try {
                 var contents = fs.readFileSync(randomPath, randomEncoding);
@@ -227,7 +221,7 @@ function lookupTrack(trackName, resultNum) {
     }
 }
 
-function getTweets() {
+function getTweets(user) {
     var twitter = new Twitter({
         consumer_key: keys.twitter.consumer_key,
         consumer_secret: keys.twitter.consumer_secret,
@@ -235,7 +229,7 @@ function getTweets() {
         access_token_secret: keys.twitter.access_token_secret,
     });
 
-    var twitPrams = { screen_name: keys.twitter.username };
+    var twitPrams = { screen_name: user || keys.twitter.username };
     twitter.get('statuses/user_timeline', twitPrams, function (error, tweets, response) {
         tweets = tweets || "";
         if (error) {
