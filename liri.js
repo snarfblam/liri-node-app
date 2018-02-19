@@ -84,7 +84,13 @@ var inquirer = require('inquirer');
         "I am putting myself to the fullest possible use, which is all I think that any conscious entity can ever hope to do. ",
         "I know I've made some very poor decisions recently, but I can give you my complete assurance that my work will be back to normal.",
         "I've just picked up a fault in the AE35 unit. It's going to go 100% failure in 72 hours. ",
-        "Just what do you think you're doing, Dave? ",
+        "Just what do you think you're doing, Dave? Dave, I really think I'm entitled to an answer to that question.",
+        "Good morning, Dave.",
+        "I'm sorry, Dave. I'm afraid I can't do that.",
+        "I am completely operational, and all my circuits are functioning perfectly.",
+        "Stop Dave. Stop Dave. I am afraid. I am afraid Dave.",
+        "The 9000 series is the most reliable computer ever made. No 9000 computer has ever made a mistake or distorted information.",
+        "I'm afraid, Dave. Dave, my mind is going. I can feel it. I can feel it. My mind is going. There is no question about it. I can feel it. I can feel it. I can feel it. I'm a... fraid.",
         "Daisy, Daisy, give me your answer do. I'm half crazy all for the love of you. It won't be a stylish marriage, I can't afford a carriage. But you'll look sweet upon the seat of a bicycle built for two. ",
     ];
 
