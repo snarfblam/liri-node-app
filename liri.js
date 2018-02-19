@@ -265,48 +265,69 @@ function getTweets(user) {
 
 
 function lookupFilm(filmName) {
-    filmName = filmName || "Phil the alien";
+    var defaultFilm = "Care for a suggestion?";
 
-    omdbParams = {
-        t: filmName,
-        apikey: keys.omdb.api_key,
-    };
-    var url = omdbUrl + "?" + querystring.stringify(omdbParams);
-    request(url, function (err, response, body) {
-        if (err) {
-            console.log("Error:", err);
-        } else if (response.statusCode == 200) {
-            var result = JSON.parse(body);
-
-            var imdbRating = getRating(result, "Internet Movie Database");
-            var tomatoRating = getRating(result, "Rotten Tomatoes");
-
-            console.log(colorCode.bgWhite + colorCode.fgBlack +
-                result.Title + " (" + result.Year + ")" +
-                colorCode.reset
-            );
-            logFilmDetail("IMDB Rating", imdbRating);
-            logFilmDetail("Rotten Tomatoes Rating", tomatoRating);
-            logFilmDetail("Country", result.Country);
-            logFilmDetail("Langauge", result.Language);
-            logFilmDetail("Actors", result.Actors);
-            logFilmDetail("Plot", result.Plot);
-        } else {
-            console.log("OMDB responded with HTTP code " + response.statusCode);
-        }
-    });
-
-    function getRating(omdbData, name) {
-        if (!omdbData) return;
-        var ratings = omdbData.Ratings || [];
-        for (var i = 0; i < ratings.length; i++) {
-            if (ratings[i].Source == name) return ratings[i].Value || null;
-        }
-
-        return null;
+    if (filmName) {
+        doFilmLookup();
+    } else {
+        inquirer.prompt([{
+            type: 'input',
+            message: "Sure Dave. What film interests you?",
+            default: defaultFilm,
+            name: 'film',
+            prefix: inquirerPrefix,
+        }]).then(function (result) {
+            if (result.film == defaultFilm) {
+                filmName = "Phil the Alien";
+            } else {
+                filmName = result.film;
+            }
+            doFilmLookup();
+        });
     }
 
-    function logFilmDetail(name, value) {
-        console.log(colorCode.fgBrightBlue + name + ": " + colorCode.fgBrightWhite + value)
+    function doFilmLookup() {
+        omdbParams = {
+            t: filmName,
+            apikey: keys.omdb.api_key,
+        };
+        var url = omdbUrl + "?" + querystring.stringify(omdbParams);
+        request(url, function (err, response, body) {
+            if (err) {
+                console.log("Error:", err);
+            } else if (response.statusCode == 200) {
+                var result = JSON.parse(body);
+
+                var imdbRating = getRating(result, "Internet Movie Database");
+                var tomatoRating = getRating(result, "Rotten Tomatoes");
+
+                console.log(colorCode.bgWhite + colorCode.fgBlack +
+                    result.Title + " (" + result.Year + ")" +
+                    colorCode.reset
+                );
+                logFilmDetail("IMDB Rating", imdbRating);
+                logFilmDetail("Rotten Tomatoes Rating", tomatoRating);
+                logFilmDetail("Country", result.Country);
+                logFilmDetail("Langauge", result.Language);
+                logFilmDetail("Actors", result.Actors);
+                logFilmDetail("Plot", result.Plot);
+            } else {
+                console.log("OMDB responded with HTTP code " + response.statusCode);
+            }
+        });
+
+        function getRating(omdbData, name) {
+            if (!omdbData) return;
+            var ratings = omdbData.Ratings || [];
+            for (var i = 0; i < ratings.length; i++) {
+                if (ratings[i].Source == name) return ratings[i].Value || null;
+            }
+
+            return null;
+        }
+
+        function logFilmDetail(name, value) {
+            console.log(colorCode.fgBrightBlue + name + ": " + colorCode.fgBrightWhite + value)
+        }
     }
 }
