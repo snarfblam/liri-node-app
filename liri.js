@@ -146,7 +146,7 @@ function lookupTrack(trackName, resultNum) {
         doTheLookup();
     } else {
 
-        var defaultTrack = 'or might I choose?';
+        var defaultTrack = 'Or might I choose?';
 
         inquirer.prompt([{
             type: "input",
