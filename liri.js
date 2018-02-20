@@ -68,13 +68,67 @@ var inquirer = require('inquirer');
         bgWhite: "\x1b[47m",
     }
 
-    var inquirerPrefix =
-        colorCode.fgBrightWhite + "▐" +
-        colorCode.bgBlack + colorCode.fgWhite + "(" +
+    // var liriLogo =
+    //     colorCode.fgWhite + "▐" + colorCode.bgBlack + "▀▀▀" + colorCode.fgWhite + "▌\n" +
+    //     colorCode.fgWhite + "▐" + colorCode.bgBlack + "   " + colorCode.fgWhite + "▌" +
+    //     colorCode.fgRed + " LIRI 9000\n" +
+    //     colorCode.fgWhite + "▐" +
+    //     colorCode.bgBlack + colorCode.fgBrightWhite + "(" +
+    //     colorCode.fgBrightRed + "●" +
+    //     colorCode.fgBrightWhite + ")" +
+    //     colorCode.reset + colorCode.fgWhite + "▌\n" +
+    //     colorCode.fgWhite + "▐" + colorCode.bgBlack + "   " + colorCode.fgWhite + "▌\n" +
+    //     colorCode.fgWhite + "▐" + colorCode.bgBlack + "███" + colorCode.fgWhite + "▌" +
+    //     colorCode.fgRed;
+
+    var liriLogoLines = [
+        colorCode.fgWhite + "▐" + colorCode.bgBlack + "▀▀▀" + colorCode.fgWhite + "▌" + colorCode.fgRed + " LIRI 9000",
+        colorCode.fgWhite + "▐" + colorCode.bgBlack + "   " + colorCode.fgWhite + "▌",
+        colorCode.fgWhite + "▐" + colorCode.bgBlack + colorCode.fgBrightWhite + "(" + colorCode.fgBrightRed + "●" + colorCode.fgBrightWhite + ")" + colorCode.reset + colorCode.fgWhite + "▌",
+        colorCode.fgWhite + "▐" + colorCode.bgBlack + "   " + colorCode.fgWhite + "▌",
+        colorCode.fgWhite + "▐" + colorCode.bgBlack + "███" + colorCode.fgWhite + "▌" + colorCode.fgRed,
+    ];
+
+    var inquirerPrefix = colorCode.bgBlack + colorCode.fgBrightWhite + "(" +
         colorCode.fgBrightRed + "●" +
-        colorCode.fgWhite + ")" +
-        colorCode.reset + colorCode.fgBrightWhite + "▌" +
+        colorCode.fgBrightWhite + ")" +
         colorCode.fgRed;
+}
+
+function renderLogo(message) {
+    message = message.split(' '); // process message as words
+    var terminalWidth = process.stdout.columns || 80; // assume 80-columns if it's not specified
+
+    // First two lines will not contain any message text
+    renderLine(liriLogoLines[0], []);
+    renderLine(liriLogoLines[1], []);
+    
+    // Render remaining logo along with message text
+    for(var iLine = 2; iLine < liriLogoLines.length; iLine++) {
+        renderLine(liriLogoLines[iLine], message);
+    }
+
+    // Render any remaining message text
+    while(message.length > 0) {
+        renderLine("", message);
+    }
+
+    // Note that this function neglects to take non-rendered characters (e.g. color codes) into account.
+    // This might prevent the full width of the row from being used, but won't otherwise glitch wrapping.
+    function renderLine(logoText, messageText) {
+        var controlCharsRegex = /([^\x20-\x7E]...)+/g;
+        var logoSize = logoText.replace(controlCharsRegex, '').length;
+
+        var txt = ""; // text, not including logo characeters
+
+        //var txt = logoText + colorCode.fgRed;
+        // Keep moving words from the message text to the output buffer as long as they'll fit
+        while(messageText.length > 0 && logoSize + txt.length + 1 + messageText[0].length < terminalWidth) {
+            txt += " " + messageText[0];
+            messageText.shift();
+        }
+        console.log(logoText + colorCode.fgRed + txt);
+    }
 }
 
 { // Greeting
@@ -96,8 +150,10 @@ var inquirer = require('inquirer');
 
     var greetingNumber = Math.floor(Math.random() * greetings.length);
     console.log();
-    console.log(colorCode.fgRed + "LIRI 9000 " + inquirerPrefix + ": " + greetings[greetingNumber] + colorCode.reset);
+    // console.log(liriLogo + " " + greetings[greetingNumber] + colorCode.reset);
+    renderLogo(greetings[greetingNumber]);
     console.log();
+
 }
 
 // { // Command parsing
